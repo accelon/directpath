@@ -37,6 +37,9 @@ export class EPUB {
         t=t.replace(/<p class="h(\d+)">(.+?)<\/p>/g,'\n\t^h$1($2)');
         t=t.replace(/<p class="indent">/g,'\n\t');
         t=t.replace(/<p class="noindent">/g,'\n');
+
+        t=t.replace(/<p class="([a-z]+)">/g,'\n^$1 ');
+
         t=t.replace(/<a ([^/<]+)>([^\<]+?)<\/a>/g,(m0,id,text)=>{
             const m=id.match(/ch(\d+)fig(\d+)/);
             if (m){
@@ -44,6 +47,8 @@ export class EPUB {
             }
             return '';
         })
+        t=t.replace(/<tr>/g,'\n^tr ')
+
         t=t.replace(/<[^>]+>/g,''); //remove all tags
 
         t=t.replace(/\^i(\d+) +/g,'^i$1 ');//extra spaces
