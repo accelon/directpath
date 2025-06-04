@@ -10,13 +10,15 @@ export class EPUB {
     async toOffText(filename:string){
         let t=(await this.zip.file('OEBPS/'+filename).async("string")).replace(/\r?\n/g,'');
         t=entity2unicode(t)
-        t=t.replace(/<a id="page_(\d+)"\/>/g,'^pg$1 ');
+        t=t.replace(/<a id="page_(\d+?)"\/>/g,'^pg$1 ');
+        t=t.replace(/<br\/>/g,'\n');
         //foot note marker
         t=t.replace(/<small>(.+?)<\/small>/g,'^s($1)'); //remove all tags
         t=t.replace(/<i>(.+?)<\/i>/g,'^ii($1)'); //remove all tags
 
+
         //footnote
-        t=t.replace(/<td.*?><a href="#r([a-z\d]+)" id="([a-z\d]+)">(\d+)<\/a><\/td><td.*?> <\/td><td.*?>(.+?)<\/td>/g,(m,f,fn,id,notetext)=>{
+        t=t.replace(/<td valign="top"><a href="#r([a-z\d]+?)" id="([a-z\d]+?)">(\d+?)<\/a><\/td><td valign="top"> <\/td><td valign="top">(.+?)<\/td>/g,(m,f,fn,id,notetext)=>{
             const [m0,ch,ref]=fn.match(/ch(\d+)ref(\d+)/);
             const key=parseInt(ch)+'.'+ref;
             if (this.footnotes[key]) {
@@ -25,7 +27,8 @@ export class EPUB {
             this.footnotes[key]=notetext;
             return ''
         });
-        t=t.replace(/<a href="#([a-z\d]+)" id="r([a-z\d]+)">(\d+)<\/a>/g,(m,f,fn,id)=>{
+
+        t=t.replace(/<a href="#([a-z\d]+?)" id="r([a-z\d]+?)">(\d+)<\/a>/g,(m,f,fn,id)=>{
             const [m0,ch,ref]=fn.match(/ch(\d+)ref(\d+)/);
             return '^i'+ref+' ';
         });
@@ -38,18 +41,19 @@ export class EPUB {
         t=t.replace(/<p class="indent">/g,'\n\t');
         t=t.replace(/<p class="noindent">/g,'\n');
 
-        t=t.replace(/<p class="([a-z]+)">/g,'\n^$1 ');
+        t=t.replace(/<p class="([a-z]+?)">/g,'\n^$1 ');
 
-        t=t.replace(/<a ([^/<]+)>([^\<]+?)<\/a>/g,(m0,id,text)=>{
+        t=t.replace(/<a ([^/<]+?)>([^\<]+?)<\/a>/g,(m0,id,text)=>{
             const m=id.match(/ch(\d+)fig(\d+)/);
             if (m){
                 return '^fig'+parseInt(m[1])+'.'+m[2]+'('+text+')';
             }
             return '';
         })
-        t=t.replace(/<tr>/g,'\n^tr ')
+        t=t.replace(/<tr>/g,'\n')
+        t=t.replace(/<td[^>]*>/g,'｜')
 
-        t=t.replace(/<[^>]+>/g,''); //remove all tags
+        t=t.replace(/<[^>]+?>/g,''); //remove all tags
 
         t=t.replace(/\^i(\d+) +/g,'^i$1 ');//extra spaces
 

@@ -18,8 +18,8 @@ const epilog=t=>{
     return t;
 }
 const {content,footnotes}=await epub.gen({id});
-writeChanged('off/'+id+'.pgd',epilog(content.join('\n')),true);
-writeChanged('off/'+id+'-note.pgd',fromObj(footnotes).join('\n'),true);
+writeChanged('out/'+id+'.pgd',epilog(content.join('\n')),true);
+writeChanged('out/'+id+'-note.pgd',fromObj(footnotes).join('\n'),true);
 console.log('generated',(performance.now()-t)/1000,'s',content.length,'lines');
 // console.log(out)
 
